@@ -14,7 +14,7 @@ import segwit_addr
 # secp256k1 multiplication - public key
 # returns the coordinate pair resulting from EC point multiplication (repeated application of the EC group operation) of
 # the secp256k1 base point with the integer p.
-def point(p: int) -> (int, int):
+def point(p: int) -> tuple[int, int]:
     pubnumbers = ec.derive_private_key(p, ec.SECP256K1()).public_key().public_numbers()
     return pubnumbers.x, pubnumbers.y
 
@@ -42,7 +42,7 @@ def parse256(p) -> int:
     return int.from_bytes(p, 'big')
 
 
-def CKDpriv(kpar: int, cpar: bytes, i: int) -> (int, bytes):
+def CKDpriv(kpar: int, cpar: bytes, i: int) -> tuple[int, bytes]:
     if i >= 2 ** 31:
         data = bytes([0]) + ser256(kpar) + ser32(i)
     else:
@@ -62,7 +62,7 @@ def CKDpriv(kpar: int, cpar: bytes, i: int) -> (int, bytes):
     return ki, ir
 
 
-def CKDpub(xKpar: int, yKpar: int, cpar: bytes, i: int) -> (int, int, bytes):
+def CKDpub(xKpar: int, yKpar: int, cpar: bytes, i: int) -> tuple[int, int, bytes]:
     if i >= 2 ** 31:
         raise ValueError("Can't create hardened public key")
 
@@ -80,7 +80,7 @@ def seed(mnemonic: bytes, passwd: bytes) -> bytes:
     return dk
 
 
-def master_pair(seed: bytes) -> (int, bytes):
+def master_pair(seed: bytes) -> tuple[int, bytes]:
     l = hmac.digest(b'Bitcoin seed', seed, "sha512")
     il = l[0:32]
     ir = l[32:]
@@ -119,7 +119,7 @@ def serialize_key(public: bool, depth: int, index: int, chain_code: bytes,
     return base58.b58encode_check(result)
 
 
-def generate_child_private_key(parent: [], index: int, depth: int) -> []:
+def generate_child_private_key(parent: dict, index: int, depth: int) -> dict:
     key, chain_code = CKDpriv(parent["key"], parent["code"], index)
     path = parent["path"] + '/'
     if index >= 2 ** 31:
@@ -146,7 +146,7 @@ def generate_bech32(public_key):
     return segwit_addr.encode('bc', version, spk)
 
 
-def generate_child_public_key(parent: [], index: int, depth: int) -> []:
+def generate_child_public_key(parent: dict, index: int, depth: int) -> dict:
     path = parent["path"] + '/' + str(index)
     x, y, chain_code = CKDpub(parent["x"], parent["y"], parent["code"], index)
     parent_key_identifier = key_identifier(parent["x"], parent["y"])
@@ -155,7 +155,7 @@ def generate_child_public_key(parent: [], index: int, depth: int) -> []:
     return {"x": x, "y": y, "code": chain_code, "path": path}
 
 
-def get_public_key_tuple(source_key: [], parent: [], index: int, depth: int):
+def get_public_key_tuple(source_key:dict, parent: dict, index: int, depth: int):
     path = source_key["path"] + '/' + str(index)
     parent_key_identifier = key_identifier(parent["x"], parent["y"])
     serialized_key = serialize_key(True, depth, index, source_key["code"], serp(source_key["x"], source_key["y"]), parent_key_identifier)
