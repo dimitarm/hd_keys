@@ -174,7 +174,12 @@ def check_key_pair(key: int, x: int, y: int):
 
 
 def main():
-    main_seed = seed(b'stuff damp margin flip shoulder box split father bird join grocery volume', b'')
+    default_mnemonic = "stuff damp margin flip shoulder box split father bird join grocery volume"
+    prompt = f"Enter mnemonic phrase (press Enter to use default: \"{default_mnemonic}\"): "
+    user_mnemonic = input(prompt).strip()
+    mnemonic = user_mnemonic or default_mnemonic
+
+    main_seed = seed(mnemonic.encode('utf-8'), b'')
 
     print('seed: ' + main_seed.hex())
     root_key, root_chain_code = master_pair(main_seed)
