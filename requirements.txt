@@ -1,4 +1,8 @@
+## The following requirements were added by pip freeze:
+asn1crypto==1.5.1
 base58==2.1.1
+bip32==5.0.0
 cffi==2.0.0
+coincurve==20.0.0
 cryptography==46.0.3
 pycparser==2.23
